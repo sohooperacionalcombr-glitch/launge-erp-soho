@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --sidebar-width: 240px;
+  }
+
+  body {
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #141418;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3d3d4a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #5f5f70;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-night-800 border border-night-700 rounded-xl;
+  }
+
+  .input-base {
+    @apply w-full bg-night-900 border border-night-700 rounded-lg px-3 py-2.5
+           text-sm text-white placeholder-night-400
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+           transition-colors;
+  }
+
+  .label-base {
+    @apply block text-xs font-medium text-night-300 mb-1.5 uppercase tracking-wide;
+  }
+
+  .btn-primary {
+    @apply bg-brand-500 hover:bg-brand-600 text-white font-medium
+           px-4 py-2.5 rounded-lg text-sm transition-colors
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-night-700 hover:bg-night-600 text-white font-medium
+           px-4 py-2.5 rounded-lg text-sm transition-colors border border-night-600;
+  }
+
+  .btn-ghost {
+    @apply text-night-300 hover:text-white hover:bg-night-700
+           px-3 py-2 rounded-lg text-sm transition-colors;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .table-row-hover {
+    @apply hover:bg-night-700/50 transition-colors;
+  }
+}

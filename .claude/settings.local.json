@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Usuario\\\\Downloads\\\\ERP soho\\\\lounge-erp\\\\lounge-erp\\\\src\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\Users\\\\Usuario\\\\Downloads\\\\ERP soho\\\\lounge-erp\\\\lounge-erp\", \"\"\\) })",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Usuario\\\\Downloads\\\\ERP soho\\\\lounge-erp\\\\lounge-erp\\\\src\\\\app\\\\api\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(Get-Process -Name \"node\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -TimeoutSec 5 -UseBasicParsing; Write-Host \"Servidor respondeu: $\\($r.StatusCode\\)\" } catch { Write-Host \"Porta 3000 nao responde: $_\" }; try { $r = Invoke-WebRequest -Uri \"http://localhost:3001\" -TimeoutSec 3 -UseBasicParsing; Write-Host \"Servidor 3001 respondeu: $\\($r.StatusCode\\)\" } catch { Write-Host \"Porta 3001 nao responde\" })",
+      "PowerShell(netstat -ano)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -TimeoutSec 10 -UseBasicParsing; Write-Host \"OK - Status: $\\($r.StatusCode\\) - Bytes: $\\($r.RawContentLength\\)\" } catch { Write-Host \"Erro: $\\($_.Exception.Message\\)\" })"
+    ]
+  }
+}
