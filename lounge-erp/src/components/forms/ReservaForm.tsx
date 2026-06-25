@@ -587,7 +587,8 @@ export function ReservaForm({
         >
           Voltar
         </button>
-        {isEdit && (
+        {/* "Cancelar reserva" só aparece quando a reserva ainda não está cancelada */}
+        {isEdit && reserva?.status !== "cancelado" && (
           <button
             type="button"
             onClick={handleCancelarReserva}
@@ -598,8 +599,25 @@ export function ReservaForm({
         )}
       </div>
 
-      {/* ── Zona de perigo — exclusão permanente (somente admin) ─────────────── */}
-      {isAdmin && isEdit && (
+      {/* ── Excluir reserva — visível para admin quando cancelada ────────────── */}
+      {isAdmin && isEdit && reserva?.status === "cancelado" && (
+        <div className="border-t border-red-500/30 pt-5 space-y-3">
+          <p className="text-xs text-night-500 uppercase tracking-widest flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+            Reserva cancelada
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full py-3.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all"
+          >
+            Excluir Reserva Permanentemente
+          </button>
+        </div>
+      )}
+
+      {/* ── Zona de perigo — exclusão para reservas não-canceladas (somente admin) */}
+      {isAdmin && isEdit && reserva?.status !== "cancelado" && (
         <div className="border-t border-red-500/20 pt-5">
           <p className="text-xs text-night-500 mb-3 uppercase tracking-widest">Zona de perigo</p>
           <button
@@ -621,8 +639,7 @@ export function ReservaForm({
                 Excluir reserva
               </h2>
               <p className="text-night-300 text-sm leading-relaxed">
-                Esta ação removerá permanentemente a reserva do sistema.
-                Deseja continuar?
+                Tem certeza que deseja excluir esta reserva permanentemente?
               </p>
             </div>
             <div className="flex gap-3">
