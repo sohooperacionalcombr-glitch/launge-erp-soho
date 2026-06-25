@@ -19,11 +19,15 @@ interface Props {
   evento?: Evento;
 }
 
+// Converte timestamp do banco para "YYYY-MM-DD" respeitando o fuso SP.
+// .toISOString() retornaria a data em UTC — errada p/ timestamps com offset -03:00.
+// locale "sv-SE" produz exatamente o formato YYYY-MM-DD.
 function toDateInputValue(value: string | null | undefined) {
   if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value; // já está no formato certo
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo" }).format(date);
 }
 
 export function EventoForm({ evento }: Props) {
@@ -88,12 +92,36 @@ export function EventoForm({ evento }: Props) {
 
   async function handleDelete() {
     if (!evento) return;
-    const confirmed = confirm("Deseja realmente excluir este evento?");
+
+    // 1. Verificar reservas ativas antes de excluir
+    const STATUS_ATIVOS = ["pendente", "confirmado", "confirmada", "reservado"];
+    const { data: reservasAtivas } = await supabase
+      .from("reservas")
+      .select("id")
+      .eq("evento_id", evento.id)
+      .in("status", STATUS_ATIVOS)
+      .limit(1);
+
+    if (reservasAtivas && reservasAtivas.length > 0) {
+      toast.error(
+        "Este evento possui reservas ativas. Cancele ou exclua as reservas antes de excluir o evento.",
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    const confirmed = confirm(
+      `Excluir "${evento.nome}" permanentemente?\n\nEsta ação não pode ser desfeita. Reservas canceladas deste evento também serão removidas.`
+    );
     if (!confirmed) return;
 
-    const { error } = await supabase.from("eventos").update({ ativo: false }).eq("id", evento.id);
+    // 2. Excluir reservas não-ativas relacionadas ao evento (ex: canceladas)
+    await supabase.from("reservas").delete().eq("evento_id", evento.id);
+
+    // 3. Excluir o evento do banco
+    const { error } = await supabase.from("eventos").delete().eq("id", evento.id);
     if (error) {
-      toast.error("Erro ao excluir evento.");
+      toast.error("Erro ao excluir evento: " + error.message);
       return;
     }
 

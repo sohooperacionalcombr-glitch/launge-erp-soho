@@ -13,22 +13,54 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+// ─── Timezone helpers ─────────────────────────────────────────────────────────
+// Strings "YYYY-MM-DD" (sem hora) são interpretadas como UTC midnight pelo JS.
+// Em UTC-3 (América/São Paulo) isso descola o dia para o dia anterior.
+// Solução: datas sem hora recebem T12:00:00-03:00 (meio-dia SP) antes de parsear.
+const TZ = "America/Sao_Paulo";
+
+function parseDateSP(dateStr: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return new Date(dateStr + "T12:00:00-03:00");
+  }
+  return new Date(dateStr);
+}
+
 export function formatDate(dateStr: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
+    day:   "2-digit",
     month: "2-digit",
-    year: "numeric",
-  }).format(new Date(dateStr));
+    year:  "numeric",
+    timeZone: TZ,
+  }).format(parseDateSP(dateStr));
 }
 
 export function formatDateTime(dateStr: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
+    day:    "2-digit",
+    month:  "2-digit",
+    year:   "numeric",
+    hour:   "2-digit",
     minute: "2-digit",
-  }).format(new Date(dateStr));
+    timeZone: TZ,
+  }).format(parseDateSP(dateStr));
+}
+
+/** Retorna o dia da semana em pt-BR, ex: "Sexta-feira" */
+export function formatDiaSemana(dateStr: string): string {
+  const dia = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    timeZone: TZ,
+  }).format(parseDateSP(dateStr));
+  return dia.charAt(0).toUpperCase() + dia.slice(1);
+}
+
+/** Retorna data com dia da semana, ex: "Sexta-feira, 26/06/2026" */
+export function formatDateComDia(dateStr: string): string {
+  const d  = parseDateSP(dateStr);
+  const fmtDia = new Intl.DateTimeFormat("pt-BR", { weekday: "long",    timeZone: TZ }).format(d);
+  const fmtDt  = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TZ }).format(d);
+  return fmtDia.charAt(0).toUpperCase() + fmtDia.slice(1) + ", " + fmtDt;
 }
 
 export function formatCPF(cpf: string): string {
@@ -115,7 +147,7 @@ export function getEventoStatus(
   now: Date = new Date()
 ): EventoStatus {
   if (!evento.ativo) return "cancelado";
-  if (evento.data_fim && new Date(evento.data_fim) < now) return "realizado";
+  if (evento.data_fim && parseDateSP(evento.data_fim) < now) return "realizado";
   return "ativo";
 }
 

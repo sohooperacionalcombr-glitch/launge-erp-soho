@@ -164,6 +164,7 @@ export function MapaReservasClient({ camarotes, eventos }: Props) {
     }
 
     return counts;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camarotes, reservasPorCamarote]);
 
   return (
