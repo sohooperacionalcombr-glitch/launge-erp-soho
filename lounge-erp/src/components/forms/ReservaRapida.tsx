@@ -68,6 +68,9 @@ export function ReservaRapida({ eventos }: Props) {
   const [valorTotal,     setValorTotal]      = useState(0);
   const [formaPag,       setFormaPag]        = useState("");
   const [socioResp,      setSocioResp]       = useState("");
+  const [cpfNovo,        setCpfNovo]         = useState("");
+  const [emailNovo,      setEmailNovo]       = useState("");
+  const [nascimentoNovo, setNascimentoNovo]  = useState("");
   const [salvando,       setSalvando]        = useState(false);
 
   // ── Carregar camarotes e bloqueados quando evento muda ─────────────────────
@@ -164,7 +167,14 @@ export function ReservaRapida({ eventos }: Props) {
       if (isNovo) {
         const { data: novo, error: errCli } = await supabase
           .from("clientes")
-          .insert({ nome: nomeNovo.trim(), telefone: telefone.trim() || null, ativo: true })
+          .insert({
+            nome:            nomeNovo.trim(),
+            cpf:             cpfNovo.trim()        || null,
+            email:           emailNovo.trim()      || null,
+            data_nascimento: nascimentoNovo        || null,
+            telefone:        telefone.trim()       || null,
+            ativo:           true,
+          })
           .select("id")
           .single();
         if (errCli || !novo) {
@@ -215,8 +225,8 @@ export function ReservaRapida({ eventos }: Props) {
         return;
       }
 
-      toast.success("Reserva criada com sucesso!");
-      router.push(`/dashboard/reservas/${nova.id}`);
+      toast.success("Reserva criada! Atualizando mapa…");
+      router.push("/dashboard/mapa-reservas");
       router.refresh();
     } catch {
       toast.error("Erro inesperado. Tente novamente.");
@@ -355,9 +365,9 @@ export function ReservaRapida({ eventos }: Props) {
             </div>
           )}
 
-          {/* Novo cliente */}
+          {/* Novo cliente — campos completos */}
           {isNovo && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 text-amber-400 text-xs font-medium">
                 <UserPlus size={14} className="shrink-0" />
                 <span>Novo cliente · será cadastrado automaticamente</span>
@@ -366,9 +376,32 @@ export function ReservaRapida({ eventos }: Props) {
                 type="text"
                 value={nomeNovo}
                 onChange={(e) => setNomeNovo(e.target.value)}
-                placeholder="Nome completo"
+                placeholder="Nome completo *"
                 className="input-base text-base py-3"
                 autoFocus
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={cpfNovo}
+                  onChange={(e) => setCpfNovo(e.target.value)}
+                  placeholder="CPF"
+                  className="input-base text-sm"
+                />
+                <input
+                  type="date"
+                  value={nascimentoNovo}
+                  onChange={(e) => setNascimentoNovo(e.target.value)}
+                  className="input-base text-sm"
+                  title="Data de nascimento"
+                />
+              </div>
+              <input
+                type="email"
+                value={emailNovo}
+                onChange={(e) => setEmailNovo(e.target.value)}
+                placeholder="E-mail (opcional)"
+                className="input-base text-sm"
               />
             </div>
           )}

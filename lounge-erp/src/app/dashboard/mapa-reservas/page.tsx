@@ -6,6 +6,9 @@ import Link from "next/link";
 export default async function MapaReservasPage() {
   const supabase = await createClient();
 
+  // Eventos dos últimos 30 dias até o futuro — evita mostrar eventos de 2025 por padrão
+  const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const [{ data: camarotes }, { data: eventos }] = await Promise.all([
     supabase
       .from("camarotes")
@@ -16,7 +19,8 @@ export default async function MapaReservasPage() {
       .from("eventos")
       .select("id, nome, data_inicio")
       .eq("ativo", true)
-      .order("data_inicio"),
+      .gte("data_inicio", trintaDiasAtras)
+      .order("data_inicio", { ascending: true }),
   ]);
 
   return (

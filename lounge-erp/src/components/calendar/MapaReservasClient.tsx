@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate, formatCurrency, calcStatusFinanceiro, STATUS_FINANCEIRO_CONFIG } from "@/lib/utils";
+import { formatCurrency, calcStatusFinanceiro, STATUS_FINANCEIRO_CONFIG } from "@/lib/utils";
 import type { Camarate, Evento, ReservaStatus } from "@/types";
 
 // ─── Cores operacionais do Mapa ───────────────────────────────────────────────
@@ -61,6 +62,8 @@ export function MapaReservasClient({ camarotes, eventos }: Props) {
   const [reservas, setReservas] = useState<ReservaGridItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  // refreshKey força re-fetch sem resetar a seleção de evento/data
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const eventosDoDia = useMemo(
     () => eventos.filter((evento) => evento.data_inicio?.slice(0, 10) === selectedDate),
@@ -77,8 +80,6 @@ export function MapaReservasClient({ camarotes, eventos }: Props) {
       setSelectedEventoId(eventosDoDia[0].id);
     }
   }, [eventosDoDia, selectedEventoId]);
-
-  const selectedEvento = eventos.find((evento) => evento.id === selectedEventoId);
 
   useEffect(() => {
     if (!selectedEventoId || !selectedDate) {
@@ -116,7 +117,8 @@ export function MapaReservasClient({ camarotes, eventos }: Props) {
         setLoading(false);
       }
     })();
-  }, [selectedEventoId, selectedDate]);
+  // refreshKey incluído para re-disparar o fetch sem mudar evento/data
+  }, [selectedEventoId, selectedDate, refreshKey]);
 
   const reservasPorCamarote = useMemo(() => {
     const map = new Map<string, ReservaGridItem[]>();
@@ -234,9 +236,20 @@ export function MapaReservasClient({ camarotes, eventos }: Props) {
               <p className="text-night-400 text-xs uppercase tracking-widest">Mapa</p>
               <h2 className="text-white text-lg sm:text-xl font-semibold">{camarotes.length} camarotes</h2>
             </div>
-            <div className="text-right text-sm text-night-400">
-              <p>Data selecionada</p>
-              <p className="text-white">{selectedDate || "—"}</p>
+            <div className="flex items-center gap-3">
+              <div className="text-right text-sm text-night-400">
+                <p>Data selecionada</p>
+                <p className="text-white">{selectedDate || "—"}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRefreshKey((k) => k + 1)}
+                title="Atualizar mapa"
+                disabled={loading}
+                className="p-2 rounded-lg border border-night-700 text-night-400 hover:text-white hover:border-night-600 transition-colors disabled:opacity-40"
+              >
+                <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+              </button>
             </div>
           </div>
 

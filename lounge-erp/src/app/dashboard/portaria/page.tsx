@@ -16,12 +16,14 @@ export default async function PortariaPage() {
   const userName: string =
     userRecord?.nome || userRecord?.email || user?.email || "Portaria";
 
-  // ── Eventos (ativos, ordenados por data decrescente para exibir os recentes) ─
+  // ── Eventos dos últimos 30 dias + futuros (evita poluição de 2025) ────────────
+  const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: eventos } = (await supabase
     .from("eventos")
     .select("id, nome, data_inicio")
     .eq("ativo", true)
-    .order("data_inicio", { ascending: false })
+    .gte("data_inicio", trintaDiasAtras)
+    .order("data_inicio", { ascending: true })
     .limit(20)) as any;
 
   return (

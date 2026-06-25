@@ -8,9 +8,10 @@ import type { Cliente, ClienteForm as IClienteForm } from "@/types";
 
 interface Props {
   cliente?: Cliente;
+  redirectTo?: string;
 }
 
-export function ClienteForm({ cliente }: Props) {
+export function ClienteForm({ cliente, redirectTo }: Props) {
   const router = useRouter();
   const supabase = createClient() as any;
   const isEdit = !!cliente;
@@ -58,7 +59,7 @@ export function ClienteForm({ cliente }: Props) {
       toast.success("Cliente cadastrado!");
     }
 
-    router.push("/dashboard/clientes");
+    router.push(redirectTo ?? "/dashboard/clientes");
     router.refresh();
   }
 

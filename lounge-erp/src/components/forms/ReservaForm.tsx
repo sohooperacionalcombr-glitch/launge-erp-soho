@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, formatDate, calcStatusFinanceiro, STATUS_FINANCEIRO_CONFIG } from "@/lib/utils";
@@ -68,6 +69,7 @@ export function ReservaForm({
   isAdmin = false,
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient() as any;
   const isEdit = !!reserva;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -84,7 +86,9 @@ export function ReservaForm({
   } = useForm<IReservaForm>({
     defaultValues: reserva
       ? {
-          camarate_id:           reserva.camarate_id,
+          // Bug fix: coluna SQL é "camarote_id" (com o), TS interface diz "camarate_id" (sem o).
+          // Supabase retorna o nome real da coluna; lemos ambos para garantir compatibilidade.
+          camarate_id:           (reserva as any).camarote_id ?? reserva.camarate_id ?? "",
           evento_id:             reserva.evento_id,
           cliente_id:            reserva.cliente_id,
           promoter_responsavel:  reserva.promoter_responsavel ?? undefined,
@@ -117,8 +121,9 @@ export function ReservaForm({
 
   const watchedEventoId      = watch("evento_id");
   const watchedCamaroteId    = watch("camarate_id");
-  const watchedValorTotal    = Number(watch("valor_total") ?? 0);
-  const watchedValorRecebido = Number(watch("valor_recebido") ?? 0);
+  // Bug fix: `??` não captura NaN (NaN !== null/undefined). Usar `|| 0` garante fallback correto.
+  const watchedValorTotal    = Number(watch("valor_total")    || 0);
+  const watchedValorRecebido = Number(watch("valor_recebido") || 0);
   const watchedFormaPag      = watch("forma_pagamento");
 
   const isSocioOuCortesia = watchedFormaPag === "socio" || watchedFormaPag === "cortesia";
@@ -300,6 +305,15 @@ export function ReservaForm({
             {errors.cliente_id && (
               <p className="text-red-400 text-xs mt-1">{errors.cliente_id.message}</p>
             )}
+            <p className="text-xs text-night-500 mt-1">
+              Cliente não encontrado?{" "}
+              <Link
+                href={`/dashboard/clientes/novo?redirect=${encodeURIComponent(pathname)}`}
+                className="text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                Cadastrar novo cliente →
+              </Link>
+            </p>
           </div>
 
           {/* Evento — exibe apenas eventos futuros e ativos */}

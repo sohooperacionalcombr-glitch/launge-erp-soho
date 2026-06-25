@@ -61,11 +61,13 @@ export default async function FinanceiroPage({
   const params  = await searchParams;
   const supabase = await createClient();
 
-  // ── Busca de eventos para o filtro ─────────────────────────────────────────
+  // ── Busca de eventos para o filtro (últimos 30 dias + futuros) ──────────────
+  const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: eventosAll } = (await supabase
     .from("eventos")
     .select("id, nome, data_inicio")
-    .order("data_inicio", { ascending: false })) as any;
+    .gte("data_inicio", trintaDiasAtras)
+    .order("data_inicio", { ascending: true })) as any;
 
   // ── Query principal com filtros ────────────────────────────────────────────
   let q = (supabase as any)
